@@ -44,8 +44,8 @@ abstract class Tbasemodel {
         $sep= '';
         foreach ($values as $param => $val) {
             $this->resourse[$param] =$val;
-            $ssql.=$sep."`".$param."` = :".$param;
-            $sep = "` ";
+            $ssql.=$sep."`".$param."` = :". $param;
+            $sep = ", ";
         }
         $values["id"]=$this->resourse["id"];
         $qwrysvs = $this->dbcon->prepare("UPDATE `".static::$tblname."` set".$ssql." where `del`=0 and `id`= :id");
@@ -66,7 +66,7 @@ abstract class Tbasemodel {
             $this->dbcon->beginTransaction();
             $qwry=$this->dbcon->prepare("INSERT INTO `".static::$tblname."` (".$ssql1.") values (".$ssql2.")");
             $rs = $qwry->execute($values);
-            $qwry = $this->dbcon->qwry("SELECT max (`id`) as `id` FROM `".static::$tblname."` (".$tblname."`");
+            $qwry = $this->dbcon->query("SELECT MAX(`id`) as `id` FROM `" . static::$tblname . "`");
             $row = $qwry->fetch();
             $res = $row["id"];
             $this->dbcon->commit();
