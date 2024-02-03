@@ -1,7 +1,7 @@
 <?php
  class MBaseModule {
-    private $dbcon;
-	private $content;
+    protected $dbcon;
+	protected $content;
 	
 	function __construct($con)
 	{
