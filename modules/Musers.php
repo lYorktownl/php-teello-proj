@@ -82,6 +82,7 @@ class Musers extends MBaseModule
 			$linkEdit = '<a href="' . $this->selflink . '&edituser=' . $value['id'] . '">[Редактировать]</a>';  // Fix the variable name
 			$linkDelete = '<a href="' . $this->selflink . '&deleteuser=' . $value['id'] . '">[Удалить]</a>';  // Fix the variable name
 			$this->content .= '<div>' . $usersObj->getinfo('name') . ' ' . $linkEdit . ' ' . $linkDelete . '</div>';
-		}        
+		}     
+		$this->content.='<div><a href="?">назад</div>';   
     }
 }

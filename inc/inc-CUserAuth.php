@@ -3,6 +3,7 @@
 class CUserAuth {
     private $dbcon;
     private $auth = 0;
+    private $uid =0;
     function __construct($con)
     {
         $this->dbcon =$con;
@@ -19,8 +20,14 @@ class CUserAuth {
         }
         if (isset($_SESSION['userid'])) {
             $this->auth =1;
+            $this->uid =$_SESSION['userid'];
         }
     }
+
+    function getUserId(){
+        return $this->uid;
+    }
+
     function checkAuth (){
         return $this->auth;
     }
