@@ -47,6 +47,8 @@ class Musers extends MBaseModule
 				
 				$this->content.='<div><a href="/?module=users">Назад</div>';
 					
+				
+
 			}
 			
 			else{
