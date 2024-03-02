@@ -12,6 +12,8 @@ class Musers extends MBaseModule
 	}
 	function editUser(){
 		$usersObj = new Tusers($this->dbcon);
+		$tasksusersObj = new Ttasksusers($this->dbcon);
+		$tasksObj = new Ttasks($this->dbcon);
 		$this->content = '<h1>Редактирование</h1>';
 		$userId = $_GET['edituser'];
 			
@@ -45,13 +47,26 @@ class Musers extends MBaseModule
 					name = "saveuser" value ="Сохранить">';
 				$this->content.='</form>';
 				
-				$this->content.='<div><a href="/?module=users">Назад</div>';
+				
 					
 				
+				$userTasks = $tasksusersObj->getListBy(['userid' => $userId]);
 
-			}
-			
-			else{
+				if (!empty($userTasks)) {
+					$this->content .= '<h2>Список задач пользователя</h2>';
+					$this->content .= '<ul>';
+					foreach ($userTasks as $task) {
+						
+						$taskId = $task['taskid'];
+						$tasksObj->select($taskId);
+						$this->content .= '<li>' . $tasksObj->getinfo('header') . '</li>';
+					}
+					$this->content .= '</ul>';
+				} else {
+					$this->content .= '<div>Нет задач</div>';
+				}
+				$this->content .= '<div><a href="/?module=users">Назад</div>';
+			}else{
 				$this->content.='<div>Данные не найдены</div>';
 				header('Location: /');
 			}

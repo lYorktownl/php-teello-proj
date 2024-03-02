@@ -18,10 +18,17 @@ class CUserAuth {
             }
             
         }
+        
+        if (isset($_GET['logout'])) {
+            unset($_SESSION['userid']);
+            header('Location:?');
+        }
+
         if (isset($_SESSION['userid'])) {
             $this->auth =1;
             $this->uid =$_SESSION['userid'];
         }
+        
     }
 
     function getUserId(){
