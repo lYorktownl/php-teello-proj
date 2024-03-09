@@ -72,7 +72,7 @@ class Mtasks extends MBaseModule {
 
             $this->content.='<div>Заголовок:<input type="text" name="header" value =" '.$itemInfo['header'].'"></div>';
             $this->content.='<div>Описание:<textarea name="description">'.$itemInfo['description'].'</textarea></div>';
-            $this->content.='<div><input type ="submit" name = "savetask" value ="Сохранить"></div>';
+            $this->content.='<div><input type ="submit" name = "savetask" value ="Сохранить" class="btn btn-sucsess"></div>';
             $this->content.='</form>';
 
 
@@ -124,7 +124,12 @@ class Mtasks extends MBaseModule {
         $this->content.='</form>';
 
 
-        $this->content.='<div><a href="'.$baseLink.'">Назад</a></div>';
+        $this->content.='<div "><a class="btn btn-sucsess" href="'.$baseLink.'">Назад <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-arrow-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+        <path d="M5 12l14 0" />
+        <path d="M5 12l6 6" />
+        <path d="M5 12l6 -6" />
+      </svg></a></div>';
    
 
         } else {
@@ -141,7 +146,7 @@ class Mtasks extends MBaseModule {
         $stateObj = new Tstate($this->dbcon);
 
         $this->content ='<h1>Задачи</h1>';
-        $this->content.='<div><a href="'.$this->selflink.'&addtask"><button>Добавить задачу</button></a></div>';
+        $this->content.='<div><a href="'.$this->selflink.'&addtask"><button class="btn btn-sucsess">Добавить задачу  <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-plus" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M12 5l0 14" /><path d="M5 12l14 0" /></svg></button></a></div>';
 
         if(isset($_GET['addtask'])){
             $authObj = new CUserAuth($this->dbcon);
@@ -160,16 +165,21 @@ class Mtasks extends MBaseModule {
 
         foreach ($userList as $key => $value) {
             $tasksObj->select($value['id']);
-            $linkEdit = '<a href="'.$this->selflink.'&edittask='.$value['id'].'">[Редактировать]</a>';
-            $linkDelete = '<a href= '.$this->selflink. '&deletetask='.$value['id'].'">[Удалить]</a>';
+            $linkEdit = '<a class="btn btn-primary" href="'.$this->selflink.'&edittask='.$value['id'].'">Редактировать</a>';
+            $linkDelete = '<a class="btn btn-danger"href= '.$this->selflink. '&deletetask='.$value['id'].'">Удалить</a>';
             $usersObj->select($tasksObj->getinfo('owner'));
             $stateObj->select($tasksObj->getinfo('state'));
             $dt = new datetime($tasksObj->getinfo('dcreate'));
-            $this->content.='<div>'.$tasksObj->getinfo('owner').' 
+            $this->content.='<div class="row m-2"> <div class="col-3">'.$tasksObj->getinfo('owner').' 
             '.$tasksObj->getinfo('header').'
-             ('.$dt->format('d.m.Y H:i').')
-              '.$linkEdit.' '.$linkDelete.'</div>';
+             ('.$dt->format('d.m.Y H:i').')</div>
+              <div class="col-6">'.$linkEdit.' '.$linkDelete.'</div></div>';
         }
-        $this->content.='<div><a href="?">назад</div>';
+        $this->content.='<div ><a class="btn btn-sucsess" href="?"><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-arrow-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+        <path d="M5 12l14 0" />
+        <path d="M5 12l6 6" />
+        <path d="M5 12l6 -6" />
+      </svg>назад</a></div>';
     }
 }

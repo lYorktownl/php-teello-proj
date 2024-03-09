@@ -17,14 +17,8 @@ private $cells;
 
     function addhdr($value, $params=""){
     
-        /* value: Текст заголовка столбца:
-        params: Параметры форматирования: Например: "width=\"350\**
-        * Пример:
-        * $r=new TRow();
-        * $r->addhdr("Hassaнne", "width=\"20\"");
-        */
-        $cnt = count($this->cells); // Извлекаем кол-во эл в массиве сells, и заносим в переменную последний номер элем 
-        $this->cells[$cnt] = "<th $params>$value</th>"; // Записываем значение элемента массива cells с последним номером
+        $cnt = count($this->cells); 
+        $this->cells[$cnt] = "<th $params>$value</th>"; 
     }
 
     function addparam($name, $value){
@@ -34,7 +28,7 @@ private $cells;
 
     function addcell($value, $params=""){
 
-        $cnt = count($this->cells); //дсчет кол-во злем массива cells
+        $cnt = count($this->cells); 
         $this->cells[$cnt] - "<td Sparans>Svalue</td>";
     }
 

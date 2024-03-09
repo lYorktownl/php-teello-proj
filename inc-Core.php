@@ -2,27 +2,28 @@
 
 class Core {
     private $content;
+    private $tmpl;
     private $dbcon;
+    private $userName;
 
     function __construct(){
         
         $this->dbconnect();
     }
-    function execute () {
-
-       $authObj = new CUserAuth($this->dbcon);
-
-       if ($authObj->checkAuth()) {
-        // include("modules/Musers.php");
-
-        // $module = new Musers($this->dbcon);
-        // $module->execute();
-        // $this->content = $module->getContent();
-		$this->router();
-       } else{
-        $this->content = file_get_contents('tmpl/authForm.html');
-       }
-       $this->build();
+    function execute() {
+        $this->tmpl = file_get_contents('tmpl/page.html');
+        $usersObj = new Tusers($this->dbcon);
+        $authObj = new CUserAuth($this->dbcon);
+    
+        if ($authObj->checkAuth()) {
+            $uid = $authObj->getUserId();
+            $usersObj->select($uid);
+            $this->userName = $usersObj->getinfo('name');
+            $this->router();
+        } else {
+            $this->tmpl = file_get_contents('tabler-dev/demo/sign-in.html');
+        }
+        $this->build();
     }
 	function router (){
 		$moduleName = 'main';
@@ -61,9 +62,10 @@ class Core {
     }
 
     function build(){
-        $page = file_get_contents ('./page.html');
+        $page = $this->tmpl;
         $page = str_replace('{[content]}',$this->content, $page);
         $page = str_replace('{[title]}','our page',$page);
+        $page = str_replace('{[user_name]}',$this->userName,$page);
     
         print ($page);
     }

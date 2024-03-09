@@ -21,7 +21,7 @@ class CUserAuth {
         
         if (isset($_GET['logout'])) {
             unset($_SESSION['userid']);
-            header('Location:?');
+            header('Location: ?');
         }
 
         if (isset($_SESSION['userid'])) {

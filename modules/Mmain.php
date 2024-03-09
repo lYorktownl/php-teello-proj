@@ -6,8 +6,8 @@ class Mmain extends MBaseModule {
     {
         $this->content='<h1>Main screen</h1>
         <div>
-        <a href="?module=users">[Пользователи]</a>
-        <a href="?module=tasks">[Задачи]</a>
+        <a href="?module=users" class="btn btn-primary">Пользователи</a>
+        <a href="?module=tasks"class="btn btn-primary">Задачи</a>
         </div>';
         
     }
