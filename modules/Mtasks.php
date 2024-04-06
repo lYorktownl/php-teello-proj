@@ -12,7 +12,7 @@ class Mtasks extends MBaseModule {
 
     function editTask(){
         $tasksObj = new Ttasks($this->dbcon);
-        $usersObj = new Tusers($this->dbcon); 
+        $usersObj = new Tusers($this->dbconusers); 
         $stateObj = new Tstate($this->dbcon);
         $tasksusersObj = new Ttasksusers($this->dbcon);
 
@@ -142,7 +142,7 @@ class Mtasks extends MBaseModule {
 
     function showTasks(){
         $tasksObj = new Ttasks($this->dbcon);
-        $usersObj = new Tusers($this->dbcon);
+        $usersObj = new Tusers($this->dbconusers);
         $stateObj = new Tstate($this->dbcon);
 
         $this->content ='<h1>Задачи</h1>';

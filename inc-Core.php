@@ -4,16 +4,24 @@ class Core {
     private $content;
     private $tmpl;
     private $dbcon;
+    private $dbconusers;
+   
     private $userName;
 
     function __construct(){
         
-        $this->dbconnect();
+        // $this->dbconnect();
     }
     function execute() {
+        $connector= new CDBConnect;
+        $this->dbcon = $connector->connect('connect.dat');
+
+        $this->dbconusers = $connector->connect('connect2.dat');
+
         $this->tmpl = file_get_contents('tmpl/page.html');
-        $usersObj = new Tusers($this->dbcon);
-        $authObj = new CUserAuth($this->dbcon);
+        
+        $usersObj = new Tusers($this->dbconusers);
+        $authObj = new CUserAuth($this->dbconusers);
     
         if ($authObj->checkAuth()) {
             $uid = $authObj->getUserId();
@@ -33,7 +41,7 @@ class Core {
 		$modulesObj = new Tmodules($this->dbcon);
 		if ($modulesObj->selectBy(['name'=>$moduleName])) {
 			$objName = $modulesObj->getinfo('object');
-			$module = new $objName ($this->dbcon);
+			$module = new $objName ([$this->dbcon, $this->dbconusers]);
 			$module -> execute();
 			$this->content = $module->getContent();
 		}
@@ -41,22 +49,23 @@ class Core {
 	
 
     function dbconnect (){
+        $connector = new CDBConnect;
+        $this->dbcon = $connector->connect('connect.dat');
+        // $type = 'mysql';
+        // $host = 'localhost';
+        // $base = 'new_user';
+        // $user = 'root';
+        // $pasw = '';
 
-        $type = 'mysql';
-        $host = 'localhost';
-        $base = 'new_user';
-        $user = 'root';
-        $pasw = '';
+        // $this->hidemode = 0;
 
-        $this->hidemode = 0;
+        // $dsn = $type.":host=".$host.";dbname=".$base;
+        // $opt = array (
+        //     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        //     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+        // );
 
-        $dsn = $type.":host=".$host.";dbname=".$base;
-        $opt = array (
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
-        );
-
-        $this->dbcon = new PDO($dsn, $user, $pasw, $opt);
+        // $this->dbcon = new PDO($dsn, $user, $pasw, $opt);
 
         $stmt = $this->dbcon->query('SET NAMES utf8');
     }
