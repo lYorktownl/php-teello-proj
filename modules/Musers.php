@@ -61,13 +61,15 @@ class Musers extends MBaseModule
 				}
 				
 				$this->content.='<form method="post" action="'.$this->selflink.'" enctype="multipart/form-data">';
-				$this->content.='<div><input type ="text" placeholder="name" name = "name" value =" '.$itemInfo['name'].'">';
-				$this->content.='<div><input type ="text" placeholder="login" name = "login" value =" '.$itemInfo['login'].'">';
-				$this->content.='<div><input type ="text" placeholder="email" name = "email" value =" '.$itemInfo['email'].'">';
-				$this->content.='<div><input type ="text" placeholder="password" name = "password" value =" '.$itemInfo['password'].'">';
-				$this->content.='<div>Photo <input type ="file"  name = "photo"';
-				$this->content.='<div><input type ="submit"
+				$this->content.='<div class="w-fit">';
+				$this->content.='<div>name: <input class="form-control" type ="text" placeholder="name" name = "name" value =" '.$itemInfo['name'].'">';
+				$this->content.='<div>login: <input class="form-control" type ="text" placeholder="login" name = "login" value =" '.$itemInfo['login'].'">';
+				$this->content.='<div>email: <input class="form-control" type ="text" placeholder="email" name = "email" value =" '.$itemInfo['email'].'">';
+				$this->content.='<div>password: <input class="form-control" type ="text" placeholder="password" name = "password" value =" '.$itemInfo['password'].'">';
+				$this->content.='<div>Photo <input class="mt-3" type ="file"  name = "photo">';
+				$this->content.='<div><input class="btn m-3" type ="submit"
 					name = "saveuser" value ="Сохранить">';
+				$this->content.='</div>';
 				$this->content.='</form>';
 				
 				
