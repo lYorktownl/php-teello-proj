@@ -42,35 +42,39 @@ class Mmessages extends MBaseModule
                 if (isset($_POST['send'])) {
                     $itemInfo['title'] = $_POST['title'];
                     $itemInfo['descr'] = $_POST['descr'];
-                    $messageObj = new Tmessages($this->dbcon); 
-                    $messageObj->create(['senderId' => $userId, 'recipientId' => $recipientId, 'title' => $itemInfo['title'], 'descr' => $itemInfo['descr']]);
-                    $fname=$_FILES['photo']['name'];
-					$ferror=$_FILES['photo']['error'];
-					$tmpl=$_FILES['photo']['tmp_name'];
-					$ftype=$_FILES['photo']['type'];
                     
-                    if ($ferror==0){
-						$tt=explode('/',$ftype);
-						print_r($tt);
-						if($tt[1]=='jpeg' || $tt[1]=='png'){
-
-						$newfilename = md5($userId.date('Y-m-d H:i:s').rand()).'.'.$tt[1];
-							if (move_uploaded_file($tmpl, 'photos/'.$newfilename)){
-								$itemInfo['photo']=$newfilename;
-							}
-						}
-					}
-                    // header('Location:?module=messages'); 
+                    // Handle file upload
+                    $fname = $_FILES['photo']['name'];
+                    $ferror = $_FILES['photo']['error'];
+                    $tmpl = $_FILES['photo']['tmp_name'];
+                    $ftype = $_FILES['photo']['type'];
+                    
+                    if ($ferror == 0) {
+                        $tt = explode('/', $ftype);
+                        if ($tt[1] == 'jpeg' || $tt[1] == 'png') {
+                            $newfilename = md5($userId . date('Y-m-d H:i:s') . rand()) . '.' . $tt[1];
+                            if (move_uploaded_file($tmpl, 'photos/' . $newfilename)) {
+                                $itemInfo['photo'] = $newfilename;
+                            }
+                        }
+                    }
+                    
+                    // Create and save the message
+                    $messageObj = new Tmessages($this->dbcon); 
+                    $messageObj->create(['senderId' => $userId, 'recipientId' => $recipientId, 'title' => $itemInfo['title'], 'descr' => $itemInfo['descr'], 'photo' => $itemInfo['photo']]);
+                    
+                    // Redirect to avoid form resubmission
+                    header('Location:?module=messages'); 
                 } else {
-                    // Вывод формы для отправки сообщения
+                    // Display the form for sending messages
                     $this->content .= '<form method="post" action="?module=messages&sendmessage=' . $recipientId . '" enctype="multipart/form-data">';
                     $this->content .= '<input class="form-control" type="text" name="title" placeholder="Тема сообщения"><br>';
                     $this->content .= '<textarea class="form-control" name="descr" placeholder="Текст сообщения"></textarea><br>';
-                    $this->content.='<div>Photo <input type ="file"  name = "photo">';
+                    $this->content .= '<div>Photo <input type="file" name="photo"></div>';
                     $this->content .= '<input class="btn" type="submit" name="send" value="Отправить">';
                     $this->content .= '</form>';
 
-                    // Вывод отправленных сообщений
+                    // Display sent messages
                     $this->content .= '<h2>Отправленные сообщения:</h2>';
                     $messageObj = new Tmessages($this->dbcon); 
                     $sentMessages = $messageObj->getListBy(['senderId' => $userId]); 
@@ -83,7 +87,12 @@ class Mmessages extends MBaseModule
                             $this->content .= 'Тема: ' . $messageObj->getinfo('title');
                             $this->content .= '<br>';
                             $this->content .= 'Текст: ' . $messageObj->getinfo('descr');
-                            $this->content .= $messageObj->getinfo('photo');
+                            // Display photo if exists
+                            if (!empty($messageObj->getinfo('photo'))) {
+                                $photoURL = 'photos/' . $messageObj->getinfo('photo');
+                                $this->content .= '<br>';
+                                $this->content .= '<img src="' . $photoURL . '" alt="Photo">';
+                            }
                             $this->content .= '</li>';
                         }                        
                         $this->content .= '</ul>';
@@ -95,11 +104,12 @@ class Mmessages extends MBaseModule
                 $this->content = '<div>Пользователь не найден</div>';
             }
             $this->content.='<div><a class="btn btn-sucsess" href="?module=messages"><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-arrow-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-		<path stroke="none" d="M0 0h24v24H0z" fill="none" />
-		<path d="M5 12l14 0" />
-		<path d="M5 12l6 6" />
-		<path d="M5 12l6 -6" />
-	  </svg>назад</a></div>'; 
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M5 12l14 0" />
+            <path d="M5 12l6 6" />
+            <path d="M5 12l6 -6" />
+            </svg>назад</a></div>'; 
         }
     }
+
 }

@@ -68,10 +68,9 @@ class Musers extends MBaseModule
 				$this->content.='<div>password: <input class="form-control" type ="text" placeholder="password" name = "password" value =" '.$itemInfo['password'].'">';
 				if (!empty($itemInfo['photo'])) {
 					$photoURL = 'photos/' . $itemInfo['photo'];
-					// Выводим фотографию пользователя как аватарку
+					// Выводим фотографию
 					$this->content .= '<img src="' . $photoURL . '" alt="Avatar">';
 				} else {
-					// Если фотография отсутствует, выводим стандартную аватарку
 					$this->content.='<div>Photo <input class="mt-3" type ="file"  name = "photo">';
 				}
 				
