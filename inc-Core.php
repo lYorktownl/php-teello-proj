@@ -34,37 +34,38 @@ class Core {
         $this->build();
     }
 	function router (){
-        $moduleName = 'main';
-        if (isset($_GET['module'])) {
-            $moduleName = $_GET['module'];
-        }
-    
-        
-        if(isset($_GET['user_id']) && isset($_GET['format'])) {
-            
-            $userId = $_GET['user_id'];
-            $format = $_GET['format'];
-            
-            $usersModule = new Musers([$this->dbcon, $this->dbconusers]);  
-            $usersModule->getUserDataById($userId, $format);
-    
-            
-            exit();
-        }
-    
-        $modulesObj = new Tmodules($this->dbcon);
-        if ($modulesObj->selectBy(['name'=>$moduleName])) {
-            $objName = $modulesObj->getinfo('object');
-            $module = new $objName ([$this->dbcon, $this->dbconusers]);
-            $module -> execute();
-            $this->content = $module->getContent();
-        }
-    }
+		$moduleName = 'main';
+		if (isset($_GET['module'])) {
+			$moduleName = $_GET['module'];
+		}
+		$modulesObj = new Tmodules($this->dbcon);
+		if ($modulesObj->selectBy(['name'=>$moduleName])) {
+			$objName = $modulesObj->getinfo('object');
+			$module = new $objName ([$this->dbcon, $this->dbconusers]);
+			$module -> execute();
+			$this->content = $module->getContent();
+		}
+	}	
 	
 
     function dbconnect (){
         $connector = new CDBConnect;
         $this->dbcon = $connector->connect('connect.dat');
+        // $type = 'mysql';
+        // $host = 'localhost';
+        // $base = 'new_user';
+        // $user = 'root';
+        // $pasw = '';
+
+        // $this->hidemode = 0;
+
+        // $dsn = $type.":host=".$host.";dbname=".$base;
+        // $opt = array (
+        //     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        //     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+        // );
+
+        // $this->dbcon = new PDO($dsn, $user, $pasw, $opt);
 
         $stmt = $this->dbcon->query('SET NAMES utf8');
     }

@@ -32,13 +32,10 @@ abstract class Tbasemodel {
        
         $qwry = $this->dbcon->prepare("select * from `".static::$tblname."` where `del`=0".$ssql);
         $qwry->execute($values);
-
         
         if ($this->resource=$qwry->fetch()) {
-
             return 1;
         }
-
         return 0;
     }
 
