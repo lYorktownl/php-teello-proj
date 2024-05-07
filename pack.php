@@ -7,5 +7,3 @@
 
     $arr=[$type,$host,$base,$user,$pasw];
     print (json_encode($arr));
-
-    
