@@ -107,8 +107,7 @@ class Musers extends MBaseModule
 				$this->content.='<div>Данные не найдены</div>';
 				header('Location: /');
 			}
-		}
-		
+		}	
     function showUsers(){
 		 
 		$usersObj = new Tusers($this->dbconusers);
@@ -143,5 +142,5 @@ class Musers extends MBaseModule
 		<path d="M5 12l6 6" />
 		<path d="M5 12l6 -6" />
 	  </svg>назад</a></div>';   
-    }
+    }	
 }
