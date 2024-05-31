@@ -63,8 +63,8 @@ class Musers extends MBaseModule
 				$this->content.='<form method="post" action="'.$this->selflink.'" enctype="multipart/form-data">';
 				$this->content.='<div class="w-fit">';
 				$this->content.='<div>name: <input class="form-control" type ="text" placeholder="name" name = "name" value =" '.$itemInfo['name'].'">';
-				$this->content.='<div>login: <input class="form-control" type ="text" placeholder="login" name = "login" value =" '.$itemInfo['login'].'">';
 				$this->content.='<div>email: <input class="form-control" type ="text" placeholder="email" name = "email" value =" '.$itemInfo['email'].'">';
+				$this->content.='<div>login: <input class="form-control" type ="text" placeholder="login" name = "login" value =" '.$itemInfo['login'].'">';
 				$this->content.='<div>password: <input class="form-control" type ="text" placeholder="password" name = "password" value =" '.$itemInfo['password'].'">';
 				if (!empty($itemInfo['photo'])) {
 					$photoURL = 'photos/' . $itemInfo['photo'];

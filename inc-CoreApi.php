@@ -1,11 +1,8 @@
 <?php 
 
 class CoreApi {
-    private $content;
-    private $tmpl;
     private $dbcon;
     private $dbconusers;
-    private $userName;
     private $authenticated;
 
     function __construct(){
@@ -13,32 +10,58 @@ class CoreApi {
     }
 
     function execute() {
+
+    
         $connector = new CDBConnect;
         $this->dbcon = $connector->connect('connect.dat');
         $this->dbconusers = $connector->connect('connect2.dat');
 
-        if(isset($_POST['request'])){
-        //     if ($_POST['request'] == 'checkAuth') {
-        //         $this->checkAuth();
-        //     } elseif ($this->authenticated) { // проверяем аутентификацию
-                if ($_POST['request'] == 'makeAuth') {
-                    $this->makeAuth();
-                } elseif ($_POST['request'] == 'getTasksList') {
-                        $this->getTasksList();
-                } elseif ($_POST['request'] == 'getTaskData') {
-                        $this->getTaskData();
-                }elseif ($_POST['request'] == 'setTaskData') {
-                    $this->checkAuth();
-                    if ($this->authenticated) {
-                        $this->setTaskData();
-                    }
-                        
+        if(isset($_POST['request'])){ 
+            $this->makeAuth();
+            if ($_POST['request'] == 'getTasksList') {
+                $this->checkAuth();
+                if ($this->authenticated) {
+                    $this->getTasksList();
                 }
-            // } else {
-            //     print(json_encode(['error' => 'Access denied'])); // возвращаем ошибку
-            // }
+            } elseif ($_POST['request'] == 'getTaskData') {
+                $this->checkAuth();
+                if ($this->authenticated) {
+                    $this->getTaskData();
+                }
+            }elseif ($_POST['request'] == 'setTaskData') {
+                $this->checkAuth();
+                if ($this->authenticated) {
+                    $this->setTaskData();
+                }
+
+            }elseif ($_POST['request'] == 'setUserData') {
+                $this->checkAuth();
+                if ($this->authenticated) {
+                    $this->setUserData();
+                }
+
+            }elseif ($_POST['request'] == 'setMessageData') {
+                $this->checkAuth();
+                if ($this->authenticated) {
+                    $this->setMessageData();
+                }          
+            }elseif ($_POST['request'] == 'createNewTask') {
+                $this->checkAuth();
+                if ($this->authenticated) {
+                    $this->createNewTask();
+                }          
+            }elseif ($_POST['request'] == 'createNewUser') {
+                $this->checkAuth();
+                if ($this->authenticated) {
+                    $this->createNewUser();
+                }          
+            }
+            
         }
     }
+  
+    
+
     function getUserList (){
         $usersObj = new Tusers($this->dbconusers);
         $uList = $usersObj->getList();
@@ -59,22 +82,36 @@ class CoreApi {
             print(json_encode($userData));
         }
     }
-    function setTaskData() {
-        $taskid = stripcslashes($_POST['taskid']);
-        $title = stripcslashes($_POST['title']);
-        $description = stripcslashes($_POST['description']);
+    function setUserData() {
+        $uid = stripcslashes($_POST['id']);
+        $name = stripcslashes($_POST['name']);
+        $email = stripcslashes($_POST['email']);
+        $login = stripcslashes($_POST['login']);
+        $password = stripcslashes($_POST['password']);
     
         // Check if task exists and is accessible by the user
-        $tasksObj = new Ttasks($this->dbcon);
-        if ($tasksObj->select($taskid)) {
-            $query = "UPDATE tasks SET header = '$title', description = '$description' WHERE id = '$taskid'";
+        $usersObj = new Tusers($this->dbconusers);
+        if ($usersObj->select($uid)) {
+            $query = "UPDATE users SET name = '$name', email = '$email', login = '$login', password = '$password' WHERE id = '$uid'";
             if ($this->dbcon->query($query)) {
                 print(json_encode(['success']));
             } else {
                 print(json_encode(['update failed']));
             }
         } else {
-            print(json_encode(['Task not found']));
+            print(json_encode(['User not found']));
+        }
+    }
+    function createNewUser() {
+
+        $name = stripcslashes($_POST['name']);
+        $email = stripcslashes($_POST['email']);
+        $usersObj = new Tusers($this->dbconusers);
+        $usersObj->create(['name'=>$name, 'email'=>$email]);
+        if ($this->dbcon) {
+            print(json_encode(['success']));
+        } else {
+            print(json_encode(['error' => 'Database insert failed']));
         }
     }
 
@@ -100,6 +137,38 @@ class CoreApi {
         }
     }
 
+    function setTaskData() {
+        $taskid = stripcslashes($_POST['taskid']);
+        $title = stripcslashes($_POST['title']);
+        $description = stripcslashes($_POST['description']);
+    
+        // Check if task exists and is accessible by the user
+        $tasksObj = new Ttasks($this->dbcon);
+        if ($tasksObj->select($taskid)) {
+            $query = "UPDATE tasks SET header = '$title', description = '$description' WHERE id = '$taskid'";
+            if ($this->dbcon->query($query)) {
+                print(json_encode(['success']));
+            } else {
+                print(json_encode(['update failed']));
+            }
+        } else {
+            print(json_encode(['Task not found']));
+        }
+    }
+    function createNewTask() {
+
+        $header = stripcslashes($_POST['header']);
+        $description = stripcslashes($_POST['description']);
+        $tasksObj = new Ttasks($this->dbcon);
+        $authObj = new CUserAuth($this->dbconusers);
+        $tasksObj->create(['header'=>$header, 'description'=>$description, 'owner'=>$authObj->getUserId()]);
+        if ($this->dbcon) {
+            print(json_encode(['success' => true, 'task_id' => $this->dbcon->insert_id]));
+        } else {
+            print(json_encode(['error' => 'Database insert failed']));
+        }
+    }
+
 	function getMessagesList (){
         $messageObj = new Tmessages($this->dbcon);
         $messagesList = $messageObj->getList();
@@ -119,6 +188,25 @@ class CoreApi {
             ];
 
             print(json_encode($messageData));
+        }
+    }
+    function setMessageData() {
+        $messageId = stripcslashes($_POST['data']);
+        $title = stripcslashes($_POST['title']);
+        $descr = stripcslashes($_POST['descr']);
+        
+    
+        // Check if task exists and is accessible by the user
+        $messageObj = new Tmessages($this->dbcon);
+        if ($messageObj->select($messageId)) {
+            $query = "UPDATE messages SET title = '$title', descr = '$descr' WHERE id = '$messageId'";
+            if ($this->dbcon->query($query)) {
+                print(json_encode(['success']));
+            } else {
+                print(json_encode(['update failed']));
+            }
+        } else {
+            print(json_encode(['Message not found']));
         }
     }
 

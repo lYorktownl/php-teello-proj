@@ -7,23 +7,45 @@ session_start();
 			ini_set('display_startup_errors', 1);
 
 
-$sesid = '8de1d883de4a1f8d41239dba57ad347a'; 
+$sesid = '9a5a8816e4d2f1d398d4e9e2d3e215a1'; 
 
 // $array = array (
 // 	'request' => 'makeAuth',
 // 	'login' => 'admin',
 // 	'password'=> 'admin',
 // );
-$array = array(
-    'request' => 'setTaskData',
-    'taskid' => 47,
-    'title' => 'New Task Title',
-    'description' => 'New Task Description',
-    'session_id' => $sesid
-);
-	
+// $array = array(
+//     'request' => 'setTaskData',
+//     'taskid' => 47,
+//     'title' => 'New Task Title',
+//     'description' => 'New Task Description',
+//     'session_id' => $sesid
 // );
-
+// $array = array(
+//         'request' => 'setUserData',
+//         'id' => 72,
+//         'name' => 'reborn',
+//         'email' => 'example@mail.com',
+//         'session_id' => $sesid,
+//         'login' => 'admin',
+//         'password'=> 'admin',
+//     );
+    // $array = array(
+    //     'request' => 'createNewTask',
+    //     'session_id' => $sesid,
+    //     'login' => 'admin',
+    //     'password'=> 'admin',
+    //     'header' => 'Api task',
+    //     'description' => 'api desscription',
+    // );
+    $array = array(
+        'request' => 'createNewUser',
+        'session_id' => $sesid,
+        'login' => 'admin',
+        'password'=> 'admin',
+        'name' => 'Api user',
+        'email' => 'api@mail.com',
+    );
 $ch = curl_init('http://localhost/api.php');
 curl_setopt($ch, CURLOPT_POST, 1);
 curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($array, "", "&"));
