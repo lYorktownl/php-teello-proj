@@ -55,6 +55,11 @@ class CoreApi {
                 if ($this->authenticated) {
                     $this->createNewUser();
                 }          
+            }elseif ($_POST['request'] == 'createNewMessage') {
+                $this->checkAuth();
+                if ($this->authenticated) {
+                    $this->createNewMessage();
+                }          
             }
             
         }
@@ -209,7 +214,21 @@ class CoreApi {
             print(json_encode(['Message not found']));
         }
     }
-
+    function createNewMessage (){
+        $messageObj = new Tmessages($this->dbcon);
+        $title = stripcslashes($_POST['title']);
+        $descr = stripcslashes($_POST['descr']);
+        $recipientId = stripcslashes($_POST['recipientId']);
+        $authObj = new CUserAuth($this->dbconusers);
+        $timestamp = date('Y-m-d H:i:s');
+        $messageObj->create(['header'=>$title, 'descr'=>$descr,'senderId'=>$authObj->getUserId(), 'recipientId'=>$recipientId]);
+        if ($this->dbcon) {
+            print(json_encode('success'));
+        } else {
+            print(json_encode('Database insert failed'));
+        }
+    }
+    
     function makeAuth (){
         $sesid='-1';
         $login = stripcslashes($_POST['login']);
@@ -245,6 +264,13 @@ class CoreApi {
             print(json_encode(['error' => 'Invalid session ID']));
             exit;
         }
+    }
+    function checkTimestamp($clientTimestamp) {
+        $serverTimestamp = date('Y-m-d H:i:s');
+        $diff = strtotime($serverTimestamp) - strtotime($clientTimestamp);
+
+        // Возвращаем истину, если временная метка актуальна (разница менее 5 минут)
+        return ($diff < 300);
     }
 
 

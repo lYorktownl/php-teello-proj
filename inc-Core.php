@@ -13,50 +13,52 @@ class Core {
         // $this->dbconnect();
     }
     function execute() {
-        $connector= new CDBConnect;
+        $connector = new CDBConnect;
         $this->dbcon = $connector->connect('connect.dat');
-
         $this->dbconusers = $connector->connect('connect2.dat');
-
+    
         $this->tmpl = file_get_contents('tmpl/page.html');
-        
+    
         $usersObj = new Tusers($this->dbconusers);
         $authObj = new CUserAuth($this->dbconusers);
     
+        // Проверяем авторизацию
         if ($authObj->checkAuth()) {
             $uid = $authObj->getUserId();
             $usersObj->select($uid);
             $this->userName = $usersObj->getinfo('name');
-            $this->router();
-        } else {
+        }
+    
+        // Всегда вызываем роутер, даже для неавторизованных пользователей
+        $this->router();
+    
+        // Если пользователь не авторизован и не на странице регистрации, показываем страницу входа
+        if (!$authObj->checkAuth() && (!isset($_GET['module']) || $_GET['module'] !== 'register')) {
             $this->tmpl = file_get_contents('tabler-dev/demo/sign-in.html');
         }
+    
         $this->build();
     }
-	function router (){
+	function router() {
         $moduleName = 'main';
         if (isset($_GET['module'])) {
             $moduleName = $_GET['module'];
         }
     
-        
-        if(isset($_GET['user_id']) && isset($_GET['format'])) {
-            
-            $userId = $_GET['user_id'];
-            $format = $_GET['format'];
-            
-            $usersModule = new Musers([$this->dbcon, $this->dbconusers]);  
-            $usersModule->getUserDataById($userId, $format);
-    
-            
-            exit();
+        // Обработка модуля регистрации
+        if ($moduleName === 'register') {
+            $module = new Mregister([$this->dbcon, $this->dbconusers]);
+            $module->execute();
+            $this->content = $module->getContent();
+            return;
         }
     
+        // Обработка запросов для авторизованных пользователей
         $modulesObj = new Tmodules($this->dbcon);
-        if ($modulesObj->selectBy(['name'=>$moduleName])) {
+        if ($modulesObj->selectBy(['name' => $moduleName])) {
             $objName = $modulesObj->getinfo('object');
-            $module = new $objName ([$this->dbcon, $this->dbconusers]);
-            $module -> execute();
+            $module = new $objName([$this->dbcon, $this->dbconusers]);
+            $module->execute();
             $this->content = $module->getContent();
         }
     }

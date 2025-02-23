@@ -176,4 +176,40 @@ abstract class Tbasemodel {
         return $this->resource[$param];
     }
 
+    function getCount($conditions = []) {
+        $ssql = "";
+        $values = [];
+    
+        // Формируем условия, если они переданы
+        if (!empty($conditions)) {
+            foreach ($conditions as $param => $val) {
+                if (is_array($val)) {
+                    // Обработка массива значений (например, IN)
+                    $sval = implode(", ", array_map(function($v) {
+                        return "'" . addslashes($v) . "'";
+                    }, $val));
+                    $ssql .= " AND `$param` IN ($sval)";
+                } elseif ($val[0] == "%") {
+                    // Обработка LIKE
+                    $ssql .= " AND `$param` LIKE :$param";
+                    $values[$param] = $val;
+                } else {
+                    // Обработка простых условий
+                    $ssql .= " AND `$param` = :$param";
+                    $values[$param] = $val;
+                }
+            }
+        }
+    
+        // Формируем SQL-запрос
+        $sql = "SELECT COUNT(*) as `count` FROM `" . static::$tblname . "` WHERE `del` = 0" . $ssql;
+    
+        // Выполняем запрос
+        $qwry = $this->dbcon->prepare($sql);
+        $qwry->execute($values);
+    
+        // Возвращаем количество записей
+        $result = $qwry->fetch();
+        return (int)$result['count'];
+    }
 }

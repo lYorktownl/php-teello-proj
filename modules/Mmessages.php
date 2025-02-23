@@ -2,114 +2,140 @@
 class Mmessages extends MBaseModule
 {
     function execute()
-	{
-    	if (isset($_GET['sendmessage'])) {
-        	$this->sendMessage();
-    	} else {
-        	$this->showUsers();
-    	}
-	}
+    {
+        if (isset($_GET['sendmessage'])) {
+            $this->sendMessage();
+        } else {
+            $this->showUsers();
+        }
+    }
+
     function showUsers()
     {
         $usersObj = new Tusers($this->dbconusers);
-        $userList = $usersObj->getList(); 
+        $userList = $usersObj->getList();
         $this->content = '<h1>Мессенджер</h1>';
 
-        foreach ($userList as $key => $value) {
+        foreach ($userList as $value) {
             $usersObj->select($value['id']);
-            $linkSendMessage = '<a class="btn btn-primary" href="?module=messages&sendmessage=' . $value['id'] . '">Отправить сообщение</a>';
-            $this->content .= '<div>' . '<div>' . $usersObj->getinfo('name') . '</div>' . '<div>' . $linkSendMessage . '</div>';
+            $linkSendMessage = '<a class="btn btn-primary" href="?module=messages&sendmessage=' . $value['id'] . '">Чат</a>';
+            $this->content .= '<div class="mb-3">' .
+                '<div>' . $usersObj->getinfo('name') . ' ' . $this->getUserStatus($value['id']) . '</div>' .
+                '<div>' . $linkSendMessage . '</div></div>';
         }
-        $this->content .= '<div><a class="btn btn-success" href="?"><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-arrow-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-        <path d="M5 12l14 0" />
-        <path d="M5 12l6 6" />
-        <path d="M5 12l6 -6" />
-      </svg>Назад</a></div>';
     }
 
-    
     function sendMessage()
     {
+        error_log("sendMessage() called with recipientId: " . $_GET['sendmessage']);
         $userId = $_SESSION['userid'];
-        if (isset($_GET['sendmessage'])) {
-            $recipientId = $_GET['sendmessage'];
+        $recipientId = $_GET['sendmessage'] ?? 0;
+        if (!is_numeric($recipientId) || $recipientId <= 0) {
+            $this->content = '<div>Некорректный идентификатор пользователя</div>';
+            return;
+        }
+        
+        $usersObj = new Tusers($this->dbconusers);
+        if ($usersObj->select($recipientId)) {
+            $this->content = '<h1>Чат с ' . htmlspecialchars($usersObj->getinfo('name')) . '</h1>';
             
-            $usersObj = new Tusers($this->dbconusers);
-            if ($usersObj->select($recipientId)) {
-                $this->content = '<h1>Отправка сообщения</h1>';
+            if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send'])) {
+                $title = trim($_POST['title'] ?? '');
+                $descr = trim($_POST['descr'] ?? '');
                 
-                if (isset($_POST['send'])) {
-                    $itemInfo['title'] = $_POST['title'];
-                    $itemInfo['descr'] = $_POST['descr'];
-                    
-                    // Handle file upload
-                    $fname = $_FILES['photo']['name'];
-                    $ferror = $_FILES['photo']['error'];
-                    $tmpl = $_FILES['photo']['tmp_name'];
-                    $ftype = $_FILES['photo']['type'];
-                    
-                    if ($ferror == 0) {
-                        $tt = explode('/', $ftype);
-                        if ($tt[1] == 'jpeg' || $tt[1] == 'png') {
-                            $newfilename = md5($userId . date('Y-m-d H:i:s') . rand()) . '.' . $tt[1];
-                            if (move_uploaded_file($tmpl, 'photos/' . $newfilename)) {
-                                $itemInfo['photo'] = $newfilename;
-                            }
-                        }
-                    }
-                    
-                    // Create and save the message
-                    $messageObj = new Tmessages($this->dbcon); 
-                    $messageObj->create(['senderId' => $userId, 'recipientId' => $recipientId, 'title' => $itemInfo['title'], 'descr' => $itemInfo['descr'], 'photo' => $itemInfo['photo']]);
-                    
-                    // Redirect to avoid form resubmission
-                    header('Location:?module=messages'); 
+                if (empty($title) || empty($descr)) {
+                    $this->content .= '<p class="text-danger">Тема и текст сообщения не могут быть пустыми.</p>';
                 } else {
-                    // Display the form for sending messages
-                    $this->content .= '<form method="post" action="?module=messages&sendmessage=' . $recipientId . '" enctype="multipart/form-data">';
-                    $this->content .= '<input class="form-control" type="text" name="title" placeholder="Тема сообщения"><br>';
-                    $this->content .= '<textarea class="form-control" name="descr" placeholder="Текст сообщения"></textarea><br>';
-                    $this->content .= '<div>Photo <input type="file" name="photo"></div>';
-                    $this->content .= '<input class="btn" type="submit" name="send" value="Отправить">';
-                    $this->content .= '</form>';
-
-                    // Display sent messages
-                    $this->content .= '<h2>Отправленные сообщения:</h2>';
-                    $messageObj = new Tmessages($this->dbcon); 
-                    $sentMessages = $messageObj->getListBy(['senderId' => $userId]); 
-                    
-                    if (!empty($sentMessages)) {
-                        $this->content .= '<ul>';
-                        foreach ($sentMessages as $message => $value) {
-                            $messageObj->select($value['id']);
-                            $this->content .= '<li>';
-                            $this->content .= 'Тема: ' . $messageObj->getinfo('title');
-                            $this->content .= '<br>';
-                            $this->content .= 'Текст: ' . $messageObj->getinfo('descr');
-                            // Display photo if exists
-                            if (!empty($messageObj->getinfo('photo'))) {
-                                $photoURL = 'photos/' . $messageObj->getinfo('photo');
-                                $this->content .= '<br>';
-                                $this->content .= '<img src="' . $photoURL . '" alt="Photo">';
-                            }
-                            $this->content .= '</li>';
-                        }                        
-                        $this->content .= '</ul>';
+                    $messageData = [
+                        'senderId' => $userId,
+                        'recipientId' => $recipientId,
+                        'title' => $title,
+                        'descr' => $descr,
+                        'photo' => $this->handleFileUpload(),
+                        'status' => 0,
+                        'timestamp' => date('Y-m-d H:i:s')
+                    ];
+                    $messageObj = new Tmessages($this->dbcon);
+                    error_log("Message data: " . print_r($messageData, true));
+                    if ($messageObj->create($messageData)) {
+                        error_log("Ошибка: сообщение не сохранено. SQL ошибка: " . $this->dbcon->error);
+                        header('Location:?module=messages&sendmessage=' . $recipientId);
+                        exit;
                     } else {
-                        $this->content .= '<p>Нет отправленных сообщений</p>';
+                        $this->content .= '<p class="text-danger">Ошибка отправки сообщения.</p>';
                     }
                 }
-            } else {
-                $this->content = '<div>Пользователь не найден</div>';
             }
-            $this->content.='<div><a class="btn btn-sucsess" href="?module=messages"><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-arrow-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-            <path d="M5 12l14 0" />
-            <path d="M5 12l6 6" />
-            <path d="M5 12l6 -6" />
-            </svg>назад</a></div>'; 
+            
+            $this->content .= $this->renderChatForm($recipientId);
+            $this->content .= $this->renderMessages($userId, $recipientId);
+        } else {
+            $this->content = '<div>Пользователь не найден</div>';
         }
     }
 
+    private function handleFileUpload()
+    {
+        if (!isset($_FILES['photo']) || $_FILES['photo']['error'] !== 0) {
+            return '';
+        }
+        
+        $fileType = strtolower(pathinfo($_FILES['photo']['name'], PATHINFO_EXTENSION));
+        if (!in_array($fileType, ['jpg', 'jpeg', 'png'])) {
+            return '';
+        }
+        
+        $newFileName = md5(time() . rand()) . '.' . $fileType;
+        if (move_uploaded_file($_FILES['photo']['tmp_name'], 'photos/' . $newFileName)) {
+            return $newFileName;
+        }
+        
+        return '';
+    }
+
+    private function renderChatForm($recipientId)
+    {
+        return '<form method="post" action="?module=messages&sendmessage=' . $recipientId . '" enctype="multipart/form-data">'
+            . '<div class="mb-3"><input class="form-control" type="text" name="title" placeholder="Тема сообщения"></div>'
+            . '<div class="mb-3"><textarea class="form-control" name="descr" placeholder="Текст сообщения"></textarea></div>'
+            . '<div class="mb-3">Фото: <input type="file" name="photo" class="form-control"></div>'
+            . '<div class="mb-3"><input class="btn btn-primary" type="submit" name="send" value="Отправить"></div>'
+            . '</form>';
+    }
+
+    private function renderMessages($userId, $recipientId)
+    {
+        $messageObj = new Tmessages($this->dbcon);
+        $messages = $messageObj->getListBy(['recipientId' => [$userId, $recipientId], 'senderId' => [$userId, $recipientId]], 'timestamp ASC');
+        
+        $output = '<h2>Сообщения:</h2><div class="chat-container">';
+        foreach ($messages as $msg) {
+            $messageObj->select($msg['id']);
+            $isSender = $messageObj->getinfo('senderId') == $userId;
+            $messageClass = $isSender ? 'sent-message' : 'received-message';
+            $output .= '<div class="message ' . $messageClass . '">';
+            $output .= '<strong>' . htmlspecialchars($messageObj->getinfo('title')) . ':</strong><br>';
+            $output .= htmlspecialchars($messageObj->getinfo('descr'));
+            if ($photo = $messageObj->getinfo('photo')) {
+                $output .= '<br><img src="photos/' . htmlspecialchars($photo) . '" class="img-fluid mt-2" style="max-width: 200px;">';
+            }
+            $output .= '</div>';
+        }
+        $output .= '</div>';
+        return $output;
+    }
+    
+    private function getUserStatus($userId)
+    {
+        return '<span class="badge bg-success">Online</span>'; // Заглушка, нужно реализовать систему статусов
+    }
 }
+
+// CSS стили для чата
+echo '<style>
+.chat-container { display: flex; flex-direction: column; gap: 10px; }
+.message { max-width: 60%; padding: 10px; border-radius: 10px; }
+.sent-message { align-self: flex-end; background-color: #d1e7ff; }
+.received-message { align-self: flex-start; background-color: #f1f1f1; }
+</style>';
+?>
